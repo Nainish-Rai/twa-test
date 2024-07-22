@@ -7,7 +7,10 @@ import styled from "styled-components";
 import { Button, FlexBoxCol, FlexBoxRow } from "./components/styled/styled";
 import { useTonConnect } from "./hooks/useTonConnect";
 import { CHAIN } from "@tonconnect/protocol";
+import { useSDK } from "@metamask/sdk-react";
 import "@twa-dev/sdk";
+import { useState } from "react";
+import { disconnect } from "process";
 
 const StyledApp = styled.div`
   background-color: #e8e8e8;
@@ -28,27 +31,64 @@ const AppContainer = styled.div`
 
 function App() {
   const { network } = useTonConnect();
+  const { sdk, connected, connecting, provider, chainId } = useSDK();
+  const [account, setAccount] = useState<string>();
+
+  const connect = async () => {
+    try {
+      const accounts = await sdk?.connect();
+      console.log(accounts);
+    } catch (err) {
+      console.warn("failed to connect..", err);
+    }
+  };
+
+  const disconnect = async () => {
+    try {
+      await sdk?.disconnect();
+    } catch (err) {
+      console.warn("failed to disconnect..", err);
+    }
+  };
 
   return (
-    <StyledApp>
-      <AppContainer>
-        <FlexBoxCol>
-          <FlexBoxRow>
-            <TonConnectButton />
-            <Button>
-              {network
-                ? network === CHAIN.MAINNET
-                  ? "mainnet"
-                  : "testnet"
-                : "N/A"}
-            </Button>
-          </FlexBoxRow>
-          <Counter />
-          <TransferTon />
-          <Jetton />
-        </FlexBoxCol>
-      </AppContainer>
-    </StyledApp>
+    <div
+      className="  App"
+      style={{
+        backgroundColor: "black",
+        width: "100%",
+        height: "100vh",
+        margin: 0,
+        padding: 0,
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+        alignItems: "center",
+      }}
+    >
+      <div style={{ color: "white" }}>Nainish MiniApp</div>
+      <button
+        style={{ padding: 10, margin: 10, borderRadius: 10 }}
+        onClick={connect}
+      >
+        Connect
+      </button>
+      <button
+        style={{ padding: 10, margin: 10, borderRadius: 10 }}
+        onClick={disconnect}
+      >
+        Disconnet
+      </button>
+      {connected && (
+        <div style={{ color: "white" }}>
+          <>
+            {chainId && `Connected chain: ${chainId}`}
+            <p></p>
+            {account && `Connected account: ${account}`}
+          </>
+        </div>
+      )}
+    </div>
   );
 }
 
